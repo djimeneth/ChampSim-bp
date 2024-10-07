@@ -1,0 +1,9 @@
+#!/bin/csh
+foreach bp ( tage_sc_l hashed_perceptron bimodal mpp )
+	foreach ipf ( no_instr )
+		./config.sh $bp-$ipf.json
+		make clean
+		make
+		mv -v bin/champsim-lru bin/champsim-$bp-$ipf
+	end
+end

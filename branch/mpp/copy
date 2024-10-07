@@ -1,0 +1,4 @@
+#!/bin/csh
+foreach i ( branch.h  btb.h  eval.h  four.h  mpp.cc  mpp.h )
+	cp -v ~djimenez/bpwork/mpp/$i .
+end

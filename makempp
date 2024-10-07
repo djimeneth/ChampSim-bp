@@ -1,0 +1,12 @@
+#!/bin/csh
+foreach bp ( mpp )
+	foreach ipf ( no_instr )
+		foreach n ( 6 8 12 16 18 20 24 32 40 )
+			./config.sh $bp-$ipf.json
+			make clean
+			printf "#define MPP_NTABLES $n\n" > branch/mpp/ntables.h
+			make
+			mv -v bin/champsim-lru bin/champsim-$bp-$ipf-$n
+		end
+	end
+end
