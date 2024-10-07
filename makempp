@@ -6,7 +6,7 @@ foreach bp ( mpp )
 			make clean
 			printf "#define MPP_NTABLES $n\n" > branch/mpp/ntables.h
 			make
-			mv -v bin/champsim-lru bin/champsim-$bp-$ipf-$n
+			mv -v bin/champsim-lru bin/champsim-$bp-$n-$ipf
 		end
 	end
 end
