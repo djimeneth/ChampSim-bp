@@ -61,6 +61,7 @@ history_spec spv12[12] = {
 };
 
 history_spec spv16[16] = {
+/*
 { BACKPATH, 27, 1, 0, 0, 0, 1, 1 },
 { BACKPATH, 5, 3, 0, 0, 0, 2, 32 },
 { GHISTMODPATH, 0, 13, 4, -1, -1, 0, 4 },
@@ -77,6 +78,23 @@ history_spec spv16[16] = {
 { LOCAL, 9, 24, 0, 0, 0, 0, 0 },
 { MODHIST, 1, 18, -1, -1, -1, 2, 5 },
 { PATH, 3, 2, -1, -1, -1, 2, 8 },
+*/
+{ BACKPATH, 1, 1, 0, 0, 0, 3, 3 },
+{ BACKPATH, 18, 1, 0, 0, 0, 0, 6 },
+{ BACKPATH, 44, 1, 0, 0, 0, 1, 1 },
+{ BACKPATH, 5, 3, 0, 0, 0, 0, 0 },
+{ LOCAL, 0, 11, 0, 0, 0, 0, 0 },
+{ GHISTPATH, 0, 17, 2, 0, 0, 0, 0 },
+{ GHISTPATH, 128, 217, 3, 6, 0, 0, 0 },
+{ GHISTPATH, 19, 33, 1, 0, 0, 0, 0 },
+{ RECENCY, 12, 2, -1, -1, -1, 0, 0 },
+{ GHISTPATH, 4, 61, 2, 1, 0, 0, 0 },
+{ LOCAL, 0, 1, 0, 0, 0, 0, 16 },
+{ GHISTMODPATH, 1, 5, 6, -1, -1, 0, 0 },
+{ LOCAL, 7, 24, 0, 0, 0, 0, 8 },
+{ MODHIST, 1, 17, -1, -1, -1, 2, 5 },
+{ PATH, 11, 1, -1, -1, -1, 0, 4 },
+{ GHISTPATH, 34, 100, 9, 6, 0, 0, 0 },
 };
 
 history_spec spv18[18] = {
