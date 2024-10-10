@@ -1,3 +1,11 @@
+This is Daniel A. Jiménez's fork of ChampSim to explore better branch prediction. It includes recent code for the Multiperspective Perceptron Predictor (MPP), TAGE-SC-L, and code to allow ChampSim to correctly parse traces from our IISWC 2023 paper that fixes the CVP1-to-ChampSim converter; see https://ieeexplore.ieee.org/document/10289581 .
+
+The code for MPP is hideous but no worse than Seznec's in terms of inscrutability. There are a number of tuned configurations for different numbers of weights tables, defaulting to 16 which is reasonable for a real microarchitecture; see our ISCA 2020 paper for an example of a real processor that used a 16-table hashed perceptron predictor https://ieeexplore.ieee.org/document/9138988. Industry may have moved beyond this in recent years but 16 tables is defensible. By changing the parameter in ntables.h you can get 8, 12, 16, 18, 20, 24, 32, or 40 tables, all at the same hardware budget of 96KB for the SRAM weights tables. 96KB is also reasonable in today's industry (it's OK if you don't believe me because I know for certain).
+
+The TAGE-SC-L implementation was shamelessly stolen from Alberto Ros who courageously adapted it from Seznec's steaming pile of code.
+
+Future plans include putting in ITTAGE and BLBP indirect predictors.
+
 # ChampSim
 
 ![GitHub](https://img.shields.io/github/license/ChampSim/ChampSim)
