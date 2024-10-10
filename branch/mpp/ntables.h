@@ -1,1 +1,1 @@
-#define MPP_NTABLES 40
+#define MPP_NTABLES 16
