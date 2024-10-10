@@ -4,7 +4,9 @@ The code for MPP is hideous but no worse than Seznec's in terms of inscrutabilit
 
 The TAGE-SC-L implementation was shamelessly stolen from Alberto Ros who courageously adapted it from Seznec's steaming pile of code.
 
-Future plans include putting in ITTAGE and BLBP indirect predictors.
+I also adapted Alberto's "AlderLake" config file that attempts to model Intel's Alder Lake. I modified the branch prediction latency and some other latencies to reflect a modern 20 stage pipeline. There are a number of json config files named after the branch predictors in them.
+
+Future plans include putting in ITTAGE and BLBP indirect predictors, as well as good instruction prefetchers. 
 
 # ChampSim
 
