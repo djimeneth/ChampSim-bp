@@ -23,6 +23,8 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+extern void print_dan_stats ();
+
 void champsim::plain_printer::print(O3_CPU::stats_type stats)
 {
   constexpr std::array<std::pair<std::string_view, std::size_t>, 6> types{
@@ -49,6 +51,7 @@ void champsim::plain_printer::print(O3_CPU::stats_type stats)
   for (auto [str, idx] : types)
     fmt::print(stream, "{}: {:.3}\n", str, mpkis[idx]);
   fmt::print(stream, "\n");
+  print_dan_stats();
 }
 
 void champsim::plain_printer::print(CACHE::stats_type stats)

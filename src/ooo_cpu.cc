@@ -20,6 +20,7 @@
 #include <chrono>
 #include <cmath>
 #include <numeric>
+#include <map>
 
 #include "cache.h"
 #include "champsim.h"
@@ -61,6 +62,7 @@ long O3_CPU::operate()
 
     fmt::print("Heartbeat CPU {} instructions: {} cycles: {} heartbeat IPC: {:.4g} cumulative IPC: {:.4g} (Simulation time: {:%H hr %M min %S sec})\n", cpu,
                num_retired, current_cycle, heartbeat_instr / heartbeat_cycle, phase_instr / phase_cycle, elapsed_time());
+    fflush (stdout);
     next_print_instruction += STAT_PRINTING_PERIOD;
 
     last_heartbeat_instr = num_retired;
@@ -120,6 +122,7 @@ void O3_CPU::initialize_instruction()
     input_queue.pop_front();
 
     IFETCH_BUFFER.back().event_cycle = current_cycle;
+    IFETCH_BUFFER.back().fetch_cycle = current_cycle;
   }
 }
 
@@ -536,6 +539,39 @@ bool O3_CPU::execute_load(const LSQ_ENTRY& lq_entry)
   return L1D_bus.issue_read(data_packet);
 }
 
+// djimenez
+
+struct dan_branch_rec {
+        uint64_t n, nmiss;
+        uint64_t sum_penalty;
+
+        dan_branch_rec (void) {
+                n = 0; 
+                nmiss = 0;
+                sum_penalty = 0;
+        }
+};
+
+std::map<uint64_t, dan_branch_rec> dan_branch_stats;
+
+void print_dan_stats (void) {
+	long sum = 0, n = 0;
+	printf ("IP\tMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\n");
+	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
+		dan_branch_rec & r =(*p).second;
+		n += r.nmiss;
+	}
+	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
+		dan_branch_rec & r =(*p).second;
+		sum += r.sum_penalty;
+		if (r.nmiss > 100) {
+			printf ("%lx\t%0.3f%%\t%f\t%f\n", (*p).first, 100.0 * r.nmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n);
+		}
+	}
+	printf ("TOTAL AVG PENALTY %f\n", sum / (double) n);
+	fflush (stdout);
+}
+
 void O3_CPU::do_complete_execution(ooo_model_instr& instr)
 {
   for (auto dreg : instr.destination_registers) {
@@ -556,8 +592,19 @@ void O3_CPU::do_complete_execution(ooo_model_instr& instr)
       dependent.scheduled = COMPLETED;
   }
 
-  if (instr.branch_mispredicted)
-    fetch_resume_cycle = current_cycle + BRANCH_MISPREDICT_PENALTY;
+  // djimenez
+
+  if (instr.is_branch) {
+	dan_branch_rec * r = &dan_branch_stats[instr.ip];
+	r->n++;
+  }
+  if (instr.branch_mispredicted) {
+	fetch_resume_cycle = current_cycle + BRANCH_MISPREDICT_PENALTY;
+	dan_branch_rec * r = &dan_branch_stats[instr.ip];
+	r->nmiss++;
+	r->sum_penalty += fetch_resume_cycle - instr.fetch_cycle;
+  }
+        // djimenez
 }
 
 long O3_CPU::complete_inflight_instruction()
@@ -627,6 +674,8 @@ long O3_CPU::retire_rob()
   }
   auto retire_count = std::distance(retire_begin, retire_end);
   num_retired += retire_count;
+// so here if we find a mispredicted branch then we count??? djimenez
+// where do we flush the ROB???
   ROB.erase(retire_begin, retire_end);
 
   return retire_count;
