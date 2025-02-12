@@ -30,6 +30,8 @@
 #include <CLI/CLI.hpp>
 #include <fmt/core.h>
 
+long int branch_frequency = -1;
+
 namespace champsim
 {
 std::vector<phase_stats> main(environment& env, std::vector<phase_info>& phases, std::vector<tracereader>& traces);
@@ -54,6 +56,7 @@ int main(int argc, char** argv)
 
   app.add_flag("-c,--cloudsuite", knob_cloudsuite, "Read all traces using the cloudsuite format");
   app.add_flag("--hide-heartbeat", set_heartbeat_callback, "Hide the heartbeat output");
+  app.add_option("-b,--branch-frequency", branch_frequency, "Minimum count of branch to measure penalty");
   auto warmup_instr_option = app.add_option("-w,--warmup-instructions", warmup_instructions, "The number of instructions in the warmup phase");
   auto deprec_warmup_instr_option =
       app.add_option("--warmup_instructions", warmup_instructions, "[deprecated] use --warmup-instructions instead")->excludes(warmup_instr_option);

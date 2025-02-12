@@ -31,6 +31,8 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
+extern long int branch_frequency;
+
 std::chrono::seconds elapsed_time();
 
 long O3_CPU::operate()
@@ -555,6 +557,7 @@ struct dan_branch_rec {
 std::map<uint64_t, dan_branch_rec> dan_branch_stats;
 
 void print_dan_stats (void) {
+	if (branch_frequency < 0) return;
 	long sum = 0, n = 0;
 	printf ("IP\tMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\n");
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
@@ -564,7 +567,7 @@ void print_dan_stats (void) {
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
 		sum += r.sum_penalty;
-		if (r.nmiss > 100) {
+		if (r.nmiss >= (unsigned int) branch_frequency) {
 			printf ("%lx\t%0.3f%%\t%f\t%f\n", (*p).first, 100.0 * r.nmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n);
 		}
 	}
@@ -594,17 +597,19 @@ void O3_CPU::do_complete_execution(ooo_model_instr& instr)
 
   // djimenez
 
-  if (instr.is_branch) {
-	dan_branch_rec * r = &dan_branch_stats[instr.ip];
-	r->n++;
+  if (branch_frequency >= 0) {
+	if (instr.is_branch) {
+		dan_branch_rec * r = &dan_branch_stats[instr.ip];
+		r->n++;
+	}
+	if (instr.branch_mispredicted) {
+		fetch_resume_cycle = current_cycle + BRANCH_MISPREDICT_PENALTY;
+		dan_branch_rec * r = &dan_branch_stats[instr.ip];
+		r->nmiss++;
+		r->sum_penalty += fetch_resume_cycle - instr.fetch_cycle;
+ 	}
   }
-  if (instr.branch_mispredicted) {
-	fetch_resume_cycle = current_cycle + BRANCH_MISPREDICT_PENALTY;
-	dan_branch_rec * r = &dan_branch_stats[instr.ip];
-	r->nmiss++;
-	r->sum_penalty += fetch_resume_cycle - instr.fetch_cycle;
-  }
-        // djimenez
+  // djimenez
 }
 
 long O3_CPU::complete_inflight_instruction()
