@@ -559,16 +559,19 @@ std::map<uint64_t, dan_branch_rec> dan_branch_stats;
 void print_dan_stats (void) {
 	if (branch_frequency < 0) return;
 	long sum = 0, n = 0;
-	printf ("IP\tMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\n");
+	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
+		dan_branch_rec & r =(*p).second;
+		sum += r.sum_penalty;
+	}
+	printf ("IP\tMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\t%% OF TOTAL PENALTY\n");
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
 		n += r.nmiss;
 	}
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
-		sum += r.sum_penalty;
 		if (r.nmiss >= (unsigned int) branch_frequency) {
-			printf ("%lx\t%0.3f%%\t%f\t%f\n", (*p).first, 100.0 * r.nmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n);
+			printf ("@@ %lx\t%0.3f%%\t%f\t%f\t%f\n", (*p).first, 100.0 * r.nmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n, 100.0 * r.sum_penalty / (double) sum);
 		}
 	}
 	printf ("TOTAL AVG PENALTY %f\n", sum / (double) n);
