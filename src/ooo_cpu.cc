@@ -607,7 +607,7 @@ void print_dan_stats (void) {
 			printd_rjust ("0x%0.8lx", (*p).first, 18);
 			printf_rjust ("%0.3f%%", 100.0 * r.nmiss / (double) r.n, 18);
 			printf_rjust ("%0.3f%%", 100.0 * r.ndmiss / (double) r.n, 18);
-			printf_rjust ("%0.3f%%", r.sum_penalty / (double) r.nmiss, 18);
+			printf_rjust ("%0.3f", r.sum_penalty / (double) r.nmiss, 18);
 			printf_rjust ("%0.3f%%", 100.0 * r.nmiss / (double) n, 18);
 			printf_rjust ("%0.3f%%", 100.0 * r.sum_penalty / (double) sum, 18);
 			printd_rjust ("%ld", r.nmiss, 18);
