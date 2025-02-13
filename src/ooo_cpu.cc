@@ -559,6 +559,24 @@ struct dan_branch_rec {
 
 std::map<uint64_t, dan_branch_rec> dan_branch_stats;
 
+void print_rjust (const char *s, int n) {
+	int l = n - strlen (s);
+	for (int i=0; i<l; i++) printf (" ");
+	printf ("%s", s);
+}
+
+void printf_rjust (const char *s, double f, int n) {
+	char t[1000];
+	sprintf (t, s, f);
+	print_rjust (t, n);
+}
+
+void printd_rjust (const char *s, unsigned long int f, int n) {
+	char t[1000];
+	sprintf (t, s, f);
+	print_rjust (t, n);
+}
+
 void print_dan_stats (void) {
 	if (branch_frequency < 0) return;
 	long sum = 0, n = 0, nd = 0;
@@ -566,7 +584,18 @@ void print_dan_stats (void) {
 		dan_branch_rec & r =(*p).second;
 		sum += r.sum_penalty;
 	}
-	printf ("IP\tMPRED %%\tDMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\t%% OF TOTAL PENALTY\tTOTAL MISSES\n");
+
+	// print the output in a somewhat pretty way
+
+	print_rjust ("IP", 18);
+	print_rjust ("TARGET MPRED%", 18);
+	print_rjust ("DIRECTION MPRED%", 18);
+	print_rjust ("AVG PENALTY", 18);
+	print_rjust ("% TOTAL MISSES", 18);
+	print_rjust ("% TOTAL PENALTY", 18);
+	print_rjust ("TOTAL MISSES", 18);
+	printf ("\n");
+
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
 		n += r.nmiss;
@@ -575,7 +604,15 @@ void print_dan_stats (void) {
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r = (*p).second;
 		if (r.nmiss >= (unsigned int) branch_frequency) {
-			printf ("@@ %lx\t%0.3f%%\t%0.3f%%\t%f\t%f\t%f\t%ld\n", (*p).first, 100.0 * r.nmiss / (double) r.n, 100.0 * r.ndmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n, 100.0 * r.sum_penalty / (double) sum, r.nmiss);
+			printd_rjust ("0x%0.8lx", (*p).first, 18);
+			printf_rjust ("%0.3f%%", 100.0 * r.nmiss / (double) r.n, 18);
+			printf_rjust ("%0.3f%%", 100.0 * r.ndmiss / (double) r.n, 18);
+			printf_rjust ("%0.3f%%", r.sum_penalty / (double) r.nmiss, 18);
+			printf_rjust ("%0.3f%%", 100.0 * r.nmiss / (double) n, 18);
+			printf_rjust ("%0.3f%%", 100.0 * r.sum_penalty / (double) sum, 18);
+			printd_rjust ("%ld", r.nmiss, 18);
+			// we can grep for @@ through voluminous ChampSim output to get just these stats
+			printf (" @@\n");
 		}
 	}
 	printf ("TOTAL AVG PENALTY %f\n", sum / (double) n);

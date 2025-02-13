@@ -1,0 +1,33 @@
+This version of ChampSim is augmented to keep track of statistics about
+branches. Use the -b option to ChampSim to specify how many times a branch
+should be executed before its statistics show up on the output. The reported
+numbers are:
+
+IP - branch address
+
+TARGET MPRED% - percentage of branches for which this IP was mispredicted
+
+DIRECTION MPRED% - percentage of branches for which the direction of this
+conditional branch was mispredicted; doesn't include correct predictions
+where the target was wrong
+
+AVG PENALTY - average penalty (latency from fetch to commit) of this branch
+in cycles
+
+% TOTAL MISSES - percentage of total misses in the program for which this
+branch is accountable
+
+% TOTAL PENALTY - percentage of total branch penalty cycles for which this
+branch is accountable
+
+TOTAL MISSES - raw number of mispredictions
+
+In the top-level directory, there are two little helper programs:
+
+printsymbols.cc - This is a code snippet you can put into your program
+so it will produce a listing of the symbol table including dynamically
+linked functions.
+
+dis.cc - This program makes an assembly listing with the right addresses
+using the program executable and the output of the code snippet. It's a
+hack but best I can do so far.
