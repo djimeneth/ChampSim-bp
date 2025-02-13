@@ -169,6 +169,8 @@ bool O3_CPU::do_predict_branch(ooo_model_instr& arch_instr)
     // call code prefetcher every time the branch predictor is used
     l1i->impl_prefetcher_branch_operate(arch_instr.ip, arch_instr.branch_type, predicted_branch_target);
 
+    // djimenez - keep track of direction mispredicts distinct from target mispredicts
+    arch_instr.direction_mispredicted = arch_instr.branch_taken != arch_instr.branch_prediction;
     if (predicted_branch_target != arch_instr.branch_target
         || (((arch_instr.branch_type == BRANCH_CONDITIONAL) || (arch_instr.branch_type == BRANCH_OTHER))
             && arch_instr.branch_taken != arch_instr.branch_prediction)) { // conditional branches are re-evaluated at decode when the target is computed
@@ -544,12 +546,13 @@ bool O3_CPU::execute_load(const LSQ_ENTRY& lq_entry)
 // djimenez
 
 struct dan_branch_rec {
-        uint64_t n, nmiss;
+        uint64_t n, nmiss, ndmiss;
         uint64_t sum_penalty;
 
         dan_branch_rec (void) {
                 n = 0; 
                 nmiss = 0;
+		ndmiss = 0;
                 sum_penalty = 0;
         }
 };
@@ -558,20 +561,21 @@ std::map<uint64_t, dan_branch_rec> dan_branch_stats;
 
 void print_dan_stats (void) {
 	if (branch_frequency < 0) return;
-	long sum = 0, n = 0;
+	long sum = 0, n = 0, nd = 0;
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
 		sum += r.sum_penalty;
 	}
-	printf ("IP\tMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\t%% OF TOTAL PENALTY\n");
+	printf ("IP\tMPRED %%\tDMPRED %%\tAVG PENALTY\t%% OF TOTAL MISSES\t%% OF TOTAL PENALTY\tTOTAL MISSES\n");
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
 		dan_branch_rec & r =(*p).second;
 		n += r.nmiss;
+		nd += r.ndmiss;
 	}
 	for (auto p=dan_branch_stats.begin(); p!=dan_branch_stats.end(); p++) {
-		dan_branch_rec & r =(*p).second;
+		dan_branch_rec & r = (*p).second;
 		if (r.nmiss >= (unsigned int) branch_frequency) {
-			printf ("@@ %lx\t%0.3f%%\t%f\t%f\t%f\n", (*p).first, 100.0 * r.nmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n, 100.0 * r.sum_penalty / (double) sum);
+			printf ("@@ %lx\t%0.3f%%\t%0.3f%%\t%f\t%f\t%f\t%ld\n", (*p).first, 100.0 * r.nmiss / (double) r.n, 100.0 * r.ndmiss / (double) r.n, r.sum_penalty / (double) r.nmiss, 100.0 * r.nmiss / (double) n, 100.0 * r.sum_penalty / (double) sum, r.nmiss);
 		}
 	}
 	printf ("TOTAL AVG PENALTY %f\n", sum / (double) n);
@@ -609,6 +613,7 @@ void O3_CPU::do_complete_execution(ooo_model_instr& instr)
 		fetch_resume_cycle = current_cycle + BRANCH_MISPREDICT_PENALTY;
 		dan_branch_rec * r = &dan_branch_stats[instr.ip];
 		r->nmiss++;
+		if (instr.direction_mispredicted) r->ndmiss++;
 		r->sum_penalty += fetch_resume_cycle - instr.fetch_cycle;
  	}
   }

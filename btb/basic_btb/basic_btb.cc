@@ -35,7 +35,8 @@ struct btb_entry_t {
   branch_info type = branch_info::ALWAYS_TAKEN;
 
   auto index() const { return ip_tag >> 2; }
-  auto tag() const { return ip_tag >> 2; }
+  //auto tag() const { return ip_tag >> 2; } // this is a bug if you have a 2-byte branch adjacent to another branch, you get aliasing
+  auto tag() const { return ip_tag; }
 };
 
 std::map<O3_CPU*, champsim::msl::lru_table<btb_entry_t>> BTB;
